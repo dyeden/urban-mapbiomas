@@ -11,3 +11,5 @@
 ### Install extension: jupyter nbextension enable --py --sys-prefix ipyleaflet
 
 ### jupyter nbextension install bqplot --py --symlink
+
+### sudo apt install graphviz

@@ -3,3 +3,6 @@ ipykernel
 ipywidgets
 sklearn
 pandas
+numpy
+graphviz
+matplotlib
