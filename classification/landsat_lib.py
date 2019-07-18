@@ -138,3 +138,21 @@ def getLandsatGeom(geometry, date_start, date_end, sensor, cloud_cover=50, tier=
 def getLandsatMedian(geometry, date_start, date_end, sensor, cloud_cover):
     col = getLandsatGeom(geometry, date_start, date_end, sensor, cloud_cover)
     return col.median().clip(geometry)
+
+def getLandsatYear(geometry, year):
+    date_start = str(year) + '-01-01'
+    date_end = str(year + 1) + '-01-01'
+    sensor = None
+    
+    if year >= 2013:
+        sensor = 'L8'
+    elif (year > 1999 and year < 2013):
+        sensor = 'LX'
+    elif (year < 2000):
+        sensor = 'L5'
+    
+    landsat = getLandsatMedian(geometry, date_start, date_end, sensor, 60)
+
+    return landsat
+
+
