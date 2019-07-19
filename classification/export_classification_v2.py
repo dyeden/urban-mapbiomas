@@ -5,13 +5,13 @@ import classification_lib as class_lib
 
 ee.Initialize()
 
-cartas_hex_col = ee.FeatureCollection("users/dyedenm/mapbiomas/infraurbana_c4/vectors/cartas_hex");
-cartas_col = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/cartas');
-bands = ['blue', 'bu', 'evi', 'green', 'mndwi', 'ndbi', 'ndvi', 'nir', 'red', 'swir1', 'swir2', 'ui'];
+cartas_hex_col = ee.FeatureCollection("users/dyedenm/mapbiomas/infraurbana_c4/vectors/cartas_hex")
+cartas_col = ee.FeatureCollection('projects/mapbiomas-workspace/AUXILIAR/cartas')
+bands = ['blue', 'bu', 'evi', 'green', 'mndwi', 'ndbi', 'ndvi', 'nir', 'red', 'swir1', 'swir2', 'ui']
 
 
-year = 2017
-year_urban = 2018
+year = 2011
+year_urban = 2010
 
 samples_noturban = ee.FeatureCollection('projects/mapbiomas-workspace/AMOSTRAS/INFRAURBANA_COL4/samples_noturban_carta/samples_noturban_' + str(year));
 samples_urban = ee.FeatureCollection("projects/mapbiomas-workspace/AMOSTRAS/INFRAURBANA_COL4/samples_urban_carta/samples_urban_" + str(year_urban));
@@ -51,9 +51,6 @@ def start_export(samples_urban, samples_noturban, grid_name,  year):
 
 
 grid_list = class_lib.getCartasList()
-
-
-
 
 for grid_name in grid_list:
     print(grid_name, year)
