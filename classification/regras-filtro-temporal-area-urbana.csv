@@ -1,0 +1,8 @@
+rule,type,kernel,active,biome,notes,tminus2,tminus1,t,tplus1,tplus2,result
+RG1,RG,3,1,INFRAURBANA,,null,27,1,27,null,27
+RP1,RP,3,1,INFRAURBANA,,null,1,27,27,null,27
+RU1,RU,3,1,INFRAURBANA,,null,1,1,27,null,1
+RG1,RG,3,1,INFRAURBANA,,null,1,27,1,null,1
+RG1,RG,5,1,INFRAURBANA,,1,1,27,27,1,1
+RG1,RG,3,1,INFRAURBANA,,null,1,27,1,null,1
+
