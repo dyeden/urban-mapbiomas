@@ -26,8 +26,8 @@ cartas = ee.FeatureCollection("projects/mapbiomas-workspace/AUXILIAR/cartas")
 params = {
 
     "asset": {
-        "classificacao": "projects/mapbiomas-workspace/TRANSVERSAIS/INFRAURBANA3-DEV",
-        "classificacaoft": "users/dyedenterras/TRANSVERSAIS/INFRAURBANA",
+        "classificacao": "projects/mapbiomas-workspace/TRANSVERSAIS/INFRAURBANA4",
+        "classificacaoft": "users/dyedenm/mapbiomas/INFRAURBANA4-FT",
     },
 
     'bands': [
