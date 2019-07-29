@@ -3,19 +3,14 @@ ee.Initialize()
 year = 2018
 year_start = 1985
 
-asset_desti = "projects/mapbiomas-workspace/TRANSVERSAIS/INFRAURBANA3-FT-FINAL/"
-collection = ee.ImageCollection("users/dyedenterras/TRANSVERSAIS/INFRAURBANA")
+asset_desti = "projects/mapbiomas-workspace/TRANSVERSAIS/INFRAURBANA4-FT/"
+image_source = ee.Image("users/dyedenm/mapbiomas/INFRAURBANA4-FT/infraurbana_v2")
 cartas = ee.FeatureCollection("projects/mapbiomas-workspace/AUXILIAR/cartas")
 region = cartas.union().geometry().getInfo()['coordinates']
 
 ##---------------------------------------------------------------
 def export_image(image, name):
 
-    asset_export = asset_desti
-
-    image = image.where(image.neq(1), 27)
-    image = image.where(image.eq(1), 24)
-    
 
     task = ee.batch.Export.image.toAsset(
         image = image.toByte(),
@@ -35,7 +30,7 @@ def export_image(image, name):
 
 while year >= year_start:
     print(year)
-    image = collection.mosaic().select(["classification_" + str(year)])
+    image = image_source.select(["classification_" + str(year)])
     export_image(image, str(year))
     
     year -= 1

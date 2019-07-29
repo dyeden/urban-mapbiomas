@@ -1,6 +1,7 @@
 # coding: utf-8
 import ee
 import csv
+import pprint
 
 ee.Initialize()
 
@@ -158,6 +159,18 @@ class TemporalFilter(object):
 
         return image
 
+    
+    def list2multband(self, imageList):
+
+        image = imageList[0]
+
+        n = len(imageList)
+
+        for band in imageList[1:n]:
+            image = image.addBands(band)
+
+        return image
+
     def applyRulesNotCumulative(self, image):
         imageListOrig = [image.select(band) for band in self.options['bands']]
         imageList = [image.select(band) for band in self.options['bands']]
@@ -196,6 +209,7 @@ class TemporalFilter(object):
 
         n = len(self.options['bands'])
 
+
         # rules kernel 5
         for rule in self.options['ft_rules']['rpk5']:
             imageList[0] = self.applyRuleKernel5(
@@ -213,53 +227,52 @@ class TemporalFilter(object):
                     [i-2, i-1, i, i+1, i+2],
                     i
                 )
+        
+        # for rule in self.options['ft_rules']['ruk5']:
+        #     imageList[n-1] = self.applyRuleKernel5(
+        #         imageList,
+        #         rule,
+        #         [n-5, n-4, n-3, n-2, n-1],
+        #         n-1
+        #     )
 
-        for rule in self.options['ft_rules']['ruk5']:
-            imageList[n-1] = self.applyRuleKernel5(
-                imageList,
-                rule,
-                [n-5, n-4, n-3, n-2, n-1],
-                n-1
-            )
+        # # rules kernel 3
+        # for rule in self.options['ft_rules']['rpk3']:
+        #     imageList[0] = self.applyRuleKernel3(
+        #         imageList,
+        #         rule,
+        #         [0, 1, 2],
+        #         0
+        #     )
 
-        # rules kernel 3
-        for rule in self.options['ft_rules']['rpk3']:
-            imageList[0] = self.applyRuleKernel3(
-                imageList,
-                rule,
-                [0, 1, 2],
-                0
-            )
+        # for i in range(1, n-2):
+        #     for rule in self.options['ft_rules']['rgk3']:
+        #         imageList[i] = self.applyRuleKernel3(
+        #             imageList,
+        #             rule,
+        #             [i-1, i, i+1],
+        #             i
+        #         )
 
-        for i in range(1, n-2):
-            for rule in self.options['ft_rules']['rgk3']:
-                imageList[i] = self.applyRuleKernel3(
-                    imageList,
-                    rule,
-                    [i-1, i, i+1],
-                    i
-                )
-
-        for rule in self.options['ft_rules']['ruk3']:
-            imageList[n-1] = self.applyRuleKernel3(
-                imageList,
-                rule,
-                [n-3, n-2, n-1],
-                n-1
-            )
-
-        # filtered = self.list2multband(imageList)
-
-        return imageList
+        # for rule in self.options['ft_rules']['ruk3']:
+        #     imageList[n-1] = self.applyRuleKernel3(
+        #         imageList,
+        #         rule,
+        #         [n-3, n-2, n-1],
+        #         n-1
+        #     )
+        
+        filtered = self.list2multband(imageList)
+        pprint.pprint(filtered.getInfo())
+        return filtered
 
 def ImcToImage(imc):
 
 
     def map_func(image):
-        # name = ee.String(image.bandNames().get(0))
         name = ee.String(image.get('band_name'))
         year = ee.String(name).slice(15) 
-        img = image.set('band_name',name) \
+        img = image.set('band_name', ee.String('classification_').cat(year)) \
                     .set('year',year) \
                     .set('system:time_start', year.cat(ee.String('-01-01'))) \
                     .rename('classification') 
