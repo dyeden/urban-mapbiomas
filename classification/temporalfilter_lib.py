@@ -147,6 +147,7 @@ class TemporalFilter(object):
         exp = "(img1==%s) and (img2==%s) and (img3==%s) and (img4==%s) and (img5==%s)" % (
             rule['tminus2'], rule['tminus1'], rule['t'], rule['tplus1'], rule['tplus2'])
 
+
         mask = imageList[ruleId].expression(exp, {
             'img1': imageList[kernelIds[0]],
             'img2': imageList[kernelIds[1]],
@@ -154,7 +155,8 @@ class TemporalFilter(object):
             'img4': imageList[kernelIds[3]],
             'img5': imageList[kernelIds[4]]
         })
-
+        
+ 
         image = imageList[ruleId].where(mask.eq(1), rule['result'])
 
         return image
@@ -166,7 +168,8 @@ class TemporalFilter(object):
 
         n = len(imageList)
 
-        for band in imageList[1:n]:
+        for band in imageList[1:n]:            
+            
             image = image.addBands(band)
 
         return image
@@ -204,7 +207,7 @@ class TemporalFilter(object):
 
         imageList = [image.select(band) for band in self.options['bands']]
 
-        imageList = map(self.noData2NotObserved, imageList)
+        imageList = list(map(self.noData2NotObserved, imageList))
         # imageList = map(self.fillHoles, imageList)
 
         n = len(self.options['bands'])
@@ -228,42 +231,43 @@ class TemporalFilter(object):
                     i
                 )
         
-        # for rule in self.options['ft_rules']['ruk5']:
-        #     imageList[n-1] = self.applyRuleKernel5(
-        #         imageList,
-        #         rule,
-        #         [n-5, n-4, n-3, n-2, n-1],
-        #         n-1
-        #     )
+        for rule in self.options['ft_rules']['ruk5']:
+            imageList[n-1] = self.applyRuleKernel5(
+                imageList,
+                rule,
+                [n-5, n-4, n-3, n-2, n-1],
+                n-1
+            )
 
-        # # rules kernel 3
-        # for rule in self.options['ft_rules']['rpk3']:
-        #     imageList[0] = self.applyRuleKernel3(
-        #         imageList,
-        #         rule,
-        #         [0, 1, 2],
-        #         0
-        #     )
+        # rules kernel 3
+        for rule in self.options['ft_rules']['rpk3']:
+            imageList[0] = self.applyRuleKernel3(
+                imageList,
+                rule,
+                [0, 1, 2],
+                0
+            )
 
-        # for i in range(1, n-2):
-        #     for rule in self.options['ft_rules']['rgk3']:
-        #         imageList[i] = self.applyRuleKernel3(
-        #             imageList,
-        #             rule,
-        #             [i-1, i, i+1],
-        #             i
-        #         )
+        for i in range(1, n-2):
+            for rule in self.options['ft_rules']['rgk3']:
+                imageList[i] = self.applyRuleKernel3(
+                    imageList,
+                    rule,
+                    [i-1, i, i+1],
+                    i
+                )
 
-        # for rule in self.options['ft_rules']['ruk3']:
-        #     imageList[n-1] = self.applyRuleKernel3(
-        #         imageList,
-        #         rule,
-        #         [n-3, n-2, n-1],
-        #         n-1
-        #     )
-        
+        for rule in self.options['ft_rules']['ruk3']:
+            imageList[n-1] = self.applyRuleKernel3(
+                imageList,
+                rule,
+                [n-3, n-2, n-1],
+                n-1
+            )
+
+
         filtered = self.list2multband(imageList)
-        pprint.pprint(filtered.getInfo())
+
         return filtered
 
 def ImcToImage(imc):

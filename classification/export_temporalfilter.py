@@ -10,10 +10,11 @@ def start():
 
 
 
-    with open(tf_lib.rule_ft_csv, 'rb') as csvfile:
+    with open(tf_lib.rule_ft_csv, 'r') as csvfile:
         data = csv.DictReader(csvfile, delimiter=',', quotechar='|')
         for row in data:
             row['kernel'] = int(row['kernel'])
+            row['result'] = int(row['result'])
             tf_lib.params['ft_rules'].append(row)
 
     tf = tf_lib.TemporalFilter(tf_lib.params)
@@ -29,21 +30,21 @@ def start():
     image_tf = tf.applyRules(image_tf)
 
 
-    # imageName = "infraurbana_v3"
+    imageName = "infraurbana_v3"
 
-    # task = ee.batch.Export.image.toAsset(
-    #     image_tf.toByte(),
-    #     description=imageName,
-    #     assetId=tf_lib.params['asset']['classificacaoft'] + '/' + imageName,
-    #     region=tf_lib.cartas.union().geometry().getInfo()['coordinates'],
-    #     scale=30,
-    #     pyramidingPolicy='{".default":"mode"}',
-    #     maxPixels=1e13
-    # )
+    task = ee.batch.Export.image.toAsset(
+        image_tf.toByte(),
+        description=imageName,
+        assetId=tf_lib.params['asset']['classificacaoft'] + '/' + imageName,
+        region=tf_lib.cartas.union().geometry().getInfo()['coordinates'],
+        scale=30,
+        pyramidingPolicy='{".default":"mode"}',
+        maxPixels=1e13
+    )
 
-    # task.start()
+    task.start()
 
-    # print(task.status())
+    print(task.status())
 
  
 
