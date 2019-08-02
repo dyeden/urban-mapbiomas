@@ -4,7 +4,7 @@ year = 2018
 year_start = 1985
 
 asset_desti = "projects/mapbiomas-workspace/TRANSVERSAIS/INFRAURBANA4-FT/"
-image_source = ee.Image("users/dyedenm/mapbiomas/INFRAURBANA4-FT/infraurbana_v2")
+image_source = ee.Image("users/dyedenm/mapbiomas/INFRAURBANA4-FT/infraurbana_v3")
 cartas = ee.FeatureCollection("projects/mapbiomas-workspace/AUXILIAR/cartas")
 region = cartas.union().geometry().getInfo()['coordinates']
 
