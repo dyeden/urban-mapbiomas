@@ -30,7 +30,7 @@ def start():
     image_tf = tf.applyRules(image_tf)
 
 
-    imageName = "infraurbana_v3"
+    imageName = "infraurbana_v4"
 
     task = ee.batch.Export.image.toAsset(
         image_tf.toByte(),

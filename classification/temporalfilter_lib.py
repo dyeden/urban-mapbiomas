@@ -68,7 +68,6 @@ class TemporalFilter(object):
 
     }
 
-
     def __init__(self, params):
 
         self.params = params
@@ -76,7 +75,6 @@ class TemporalFilter(object):
         self.options.update(params)
 
         self.loadRules()
-
 
     def loadRules(self):
 
@@ -110,22 +108,19 @@ class TemporalFilter(object):
     def getClassificacao(self):
         return ee.ImageCollection(self.options['asset']['classificacao']).max()
 
-    
     def noData2NotObserved(self, image):
         """
         Reclassify the no data value to not observed class value
         """
         image = ee.Image(image)
 
-
         image = image.where(image.eq(0), 27).copyProperties(image)
 
         image = ee.Image(image)
 
-        image = image.unmask(27).copyProperties(image) 
+        image = image.unmask(27).copyProperties(image)
 
         return ee.Image(image)
-
 
     def applyRuleKernel3(self, imageList, rule, kernelIds, ruleId):
 
@@ -147,7 +142,6 @@ class TemporalFilter(object):
         exp = "(img1==%s) and (img2==%s) and (img3==%s) and (img4==%s) and (img5==%s)" % (
             rule['tminus2'], rule['tminus1'], rule['t'], rule['tplus1'], rule['tplus2'])
 
-
         mask = imageList[ruleId].expression(exp, {
             'img1': imageList[kernelIds[0]],
             'img2': imageList[kernelIds[1]],
@@ -155,21 +149,19 @@ class TemporalFilter(object):
             'img4': imageList[kernelIds[3]],
             'img5': imageList[kernelIds[4]]
         })
-        
- 
+
         image = imageList[ruleId].where(mask.eq(1), rule['result'])
 
         return image
 
-    
     def list2multband(self, imageList):
 
         image = imageList[0]
 
         n = len(imageList)
 
-        for band in imageList[1:n]:            
-            
+        for band in imageList[1:n]:
+
             image = image.addBands(band)
 
         return image
@@ -189,7 +181,6 @@ class TemporalFilter(object):
                     i+1
                 )
 
-        
         for rule in self.options['ft_rules']['ruk3']:
             imageList[n-1] = self.applyRuleKernel3(
                 imageList,
@@ -202,8 +193,7 @@ class TemporalFilter(object):
 
         return filtered
 
-
-    def applyRules(self, image):        
+    def applyRules(self, image):
 
         imageList = [image.select(band) for band in self.options['bands']]
 
@@ -211,7 +201,6 @@ class TemporalFilter(object):
         # imageList = map(self.fillHoles, imageList)
 
         n = len(self.options['bands'])
-
 
         # rules kernel 5
         for rule in self.options['ft_rules']['rpk5']:
@@ -230,7 +219,7 @@ class TemporalFilter(object):
                     [i-2, i-1, i, i+1, i+2],
                     i
                 )
-        
+
         for rule in self.options['ft_rules']['ruk5']:
             imageList[n-1] = self.applyRuleKernel5(
                 imageList,
@@ -265,32 +254,25 @@ class TemporalFilter(object):
                 n-1
             )
 
-
         filtered = self.list2multband(imageList)
 
         return filtered
 
-def ImcToImage(imc):
 
+def ImcToImage(imc):
 
     def map_func(image):
         name = ee.String(image.get('band_name'))
-        year = ee.String(name).slice(15) 
+        year = ee.String(name).slice(15)
         img = image.set('band_name', ee.String('classification_').cat(year)) \
-                    .set('year',year) \
-                    .set('system:time_start', year.cat(ee.String('-01-01'))) \
-                    .rename('classification') 
+            .set('year', year) \
+            .set('system:time_start', year.cat(ee.String('-01-01'))) \
+            .rename('classification')
         return img
-
-
 
     imc = imc.map(map_func)
 
-    
-
     # imc = imc.map(lambda img: img.rename('classification'))
-
-
 
     def iterate_func(img, prev):
 
@@ -301,13 +283,14 @@ def ImcToImage(imc):
         return img
 
     first_image = ee.Image(imc.first())
-  
-    image = ee.Image(imc.iterate(iterate_func, first_image) )
+
+    image = ee.Image(imc.iterate(iterate_func, first_image))
 
     image = image.select(image.bandNames().remove('classification'))
-  
+
     return image
-  
+
+
 def readParamsTable(tableName):
     """Read parameters table"""
 
@@ -328,35 +311,49 @@ def readParamsTable(tableName):
 
 def toImageCollection(image):
     def map_func(name):
-        year = ee.String(name).slice(15) 
+        year = ee.String(name).slice(15)
         img = image.select([name]) \
-                    .set('band_name',name) \
-                    .set('year',year) \
-                    .set('system:time_start', year.cat(ee.String('-01-01'))) \
-                    .rename('classification') 
+            .set('band_name', name) \
+            .set('year', year) \
+            .set('system:time_start', year.cat(ee.String('-01-01'))) \
+            .rename('classification')
         return img
 
     bandNamesList = image.bandNames()
     imc = bandNamesList.map(map_func)
-  
+
     return ee.ImageCollection.fromImages(imc)
+
 
 def remapCloud(imc):
     def iterate_func(img, prev):
         img_ = ee.Image(img).select('classification')
-        prev_ = ee.Image(prev).select('classification')
+        prev_ = ee.Image(prev).select('classification_prev')
         year = ee.String(img_.get('year'))
         band_name = ee.String(img.get('band_name'))
 
-        img_f = img_.where(prev_.eq(24).And(img_.eq(27)), 24)
-        img_f = ee.Image(prev).addBands(img_f.rename(band_name))
-        return img_f
-  
+        image_result = img_.where(prev_.eq(24).And(
+            img_.eq(27)), 24).rename(band_name)
+
+        image_final = ee.Image(prev).addBands(image_result)
+
+        image_final = image_final.addBands(**{
+            'srcImg': image_result.rename(ee.String('classification_prev')),
+           'overwrite': True
+        })
+
+        # img_f = img_.where(prev_.eq(24).And(img_.eq(27)), 24)
+        # img_f = ee.Image(prev).addBands(img_f.rename(band_name))
+        return image_final
+
     first_image = ee.Image(imc.first())
-  
-    image_ft = ee.Image(imc.iterate(iterate_func, first_image) )
-  
-    return image_ft.select(image_ft.bandNames().remove('classification'))
+
+    first_image = first_image.addBands(
+        **{'srcImg': first_image.rename(ee.String('classification_prev'))})
+
+    image_ft = ee.Image(imc.iterate(iterate_func, first_image))
+
+    return image_ft.select(image_ft.bandNames().remove('classification').remove('classification_prev'))
 
 
 def applyFilterCloud(image):
@@ -374,37 +371,32 @@ def applyFilterCloud(image):
 def applyFilterFreq(image):
     imc = toImageCollection(image).sort('system:time_start')
 
-
-
     freq = image.eq(24).reduce(ee.Reducer.sum())
-    freq_last_years = image.select(['classification_2017','classification_2018']).eq(24).reduce(ee.Reducer.sum())
-    imc = imc.map(lambda img: img.where(freq_last_years.eq(0).And(freq.lt(3)), 0))
+    freq_last_years = image.select(
+        ['classification_2017', 'classification_2018']).eq(24).reduce(ee.Reducer.sum())
+    imc = imc.map(lambda img: img.where(
+        freq_last_years.eq(0).And(freq.lt(3)), 0))
 
-    
     image = ImcToImage(imc)
-    
+
     freq = image.eq(24).reduce(ee.Reducer.sum())
-    freq_last_3years = image.select(['classification_2016','classification_2017','classification_2018']).eq(24).reduce(ee.Reducer.sum())
-    
+    freq_last_3years = image.select(
+        ['classification_2016', 'classification_2017', 'classification_2018']).eq(24).reduce(ee.Reducer.sum())
+
     imc = toImageCollection(image)
-    
 
-    imc = imc.map(lambda img: img.where(freq_last_3years.eq(0).And(freq.lt(4)), 0))
-   
+    imc = imc.map(lambda img: img.where(
+        freq_last_3years.eq(0).And(freq.lt(4)), 0))
+
     image = ImcToImage(imc)
-    
+
     freq = image.eq(24).reduce(ee.Reducer.sum())
-    freq_last_3years = image.select(['classification_2016','classification_2017','classification_2018']).eq(24).reduce(ee.Reducer.sum())
-    freq_first_3years = image.select(['classification_1985','classification_1986','classification_1987']).eq(24).reduce(ee.Reducer.sum())
+    freq_last_3years = image.select(
+        ['classification_2016', 'classification_2017', 'classification_2018']).eq(24).reduce(ee.Reducer.sum())
+    freq_first_3years = image.select(
+        ['classification_1985', 'classification_1986', 'classification_1987']).eq(24).reduce(ee.Reducer.sum())
 
-    imc = imc.map(lambda img: img.where(freq_last_3years.gt(1).And(freq_first_3years.gt(1)).And(freq.gt(20)), 24))
-
+    imc = imc.map(lambda img: img.where(freq_last_3years.gt(
+        1).And(freq_first_3years.gt(1)).And(freq.gt(20)), 24))
 
     return ImcToImage(imc)
-
-
-
-
-
-    
-
