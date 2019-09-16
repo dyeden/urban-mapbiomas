@@ -8,7 +8,8 @@ def get_area(asset_imc, geometry, year):
     raw_data = image_area.mask(image.select('classification_' + str(year)).eq(24)).reduceRegion(**{
     'reducer':ee.Reducer.sum(), 
     'geometry':geometry,
-    'scale':30
+    'scale':30,
+    'maxPixels':30000000
     } )
 
     return raw_data.get('area')
